@@ -161,6 +161,17 @@ define([
 			assert.isTrue(targetInvalidated);
 			assert.equal(target.valueOf(), 10);
 		},
+                mapCache: function() {
+                  var a = new Variable([1,2,3]);
+                  var mapExecuted = 0;
+                  var b = a.map(function(arr) { mapExecuted++; return arr[1]; });
+                  b.subscribe(function(){});
+                  assert.equal(b.valueOf(), 2);
+                  assert.equal(mapExecuted, 1);
+                  b.valueOf();
+                  assert.equal(mapExecuted, 1);
+                  assert.equal(b.valueOf(), 2);
+                },
 		derivedMap: function() {
 			var a = new Variable(2);
 			var b = new Variable(3);
@@ -236,6 +247,33 @@ define([
 			assert.deepEqual(filter1.valueOf(), [2,3,4], 'filter1 should return subset of values');
 			assert.deepEqual(filter2.valueOf(), [2], 'filter2 should return first element of subset');
 		},
+                invalidationSentinel: function() {
+                  var sentinel = new Variable();
+                  var records = [{a: 1}];
+                  var variable = new Variable(records);
+                  var mapExecuted = 0;
+                  var mapped = variable.map(function(arr) {
+                    return sentinel.map(function() {
+                      mapExecuted++;
+                      return { current: arr.slice() };
+                    });
+                  });
+                  mapped.subscribe(function(){});
+                  assert.deepEqual(mapped.valueOf(), {current:[{a:1}]});
+                  records.push({b:2});
+                  // derived value has not changed because there is no explicit dependency on original data source
+                  assert.equal(mapExecuted, 1);
+                  mapped.valueOf();
+                  assert.equal(mapExecuted, 1);
+                  assert.deepEqual(mapped.valueOf(), {current:[{a:1}]});
+                  assert.equal(mapExecuted, 1);
+                  sentinel.invalidate(); 
+                  // invalidation of dependency results in regeneration of value
+                  assert.deepEqual(mapped.valueOf(), {current:[{a:1},{b:2}]});
+                  assert.equal(mapExecuted, 2);
+                  assert.deepEqual(mapped.valueOf(), {current:[{a:1},{b:2}]});
+                  assert.equal(mapExecuted, 2);
+                },
 		items: function () {
 
 		},
