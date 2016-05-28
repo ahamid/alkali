@@ -280,7 +280,11 @@
 				}
 			}
 			this.handles = null
-			deregisterListener(this)
+			var value = this.value
+			if (value && typeof value === 'object') {
+				deregisterListener(this)
+			}
+			// deregisterListener(this)
 			var notifyingValue = this.notifyingValue
 			if (notifyingValue) {
 				// TODO: move this into the caching class
