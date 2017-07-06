@@ -1243,6 +1243,21 @@ define([
 			assert.deepEqual(vp.valueOf(), 'default')
 			assert.deepEqual(v.valueOf(), { v: 'default', p: 'unrelated prop value' })
 		},
+
+		'Variable (with undefined value) considered initialized value': function() {
+			var initial = new Variable()
+			var v = new Variable(initial)
+			v.default = new Variable('default')
+			assert.equal(v.valueOf(), initial)
+		},
+
+		'Transform (yielding undefined value) considered initialized value': function() {
+			var data = {}
+			var t = new Variable('key').to(function(k) { return data[k] })
+			var v = new Variable(t)
+			v.default = new Variable('default')
+			assert.equal(v.valueOf(), t)
+		},
 		
 		'Assignment does not change defaults': function() {
 			var v = new Variable()
