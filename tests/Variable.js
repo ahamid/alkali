@@ -1208,7 +1208,7 @@ define([
 			assert.equal(v.valueOf(), 'a')*/
 		},
 
-		'Variable default is not resolved': function() {
+		'Variable default is resolved': function() {
 			var d = new Variable('default')
 			var v = new Variable()
 			v.default = d
@@ -1221,6 +1221,27 @@ define([
 			var vp = v.property('v')
 			assert.deepEqual(v.valueOf(), { v: 'default' })
 			assert.deepEqual(vp.valueOf(), 'default')
+		},
+
+		'Property reflects transform default value': function() {
+			var t = new Variable([['v', 'default']]).to(function(vals) {
+				var o = {}
+				for (var i = 0; i < vals.length; i++) {
+					o[vals[i][0]] = vals[i][1]
+				}
+				return o
+			})
+			var v = new Variable()
+			v.default = t
+			var vp = v.property('v')
+			assert.deepEqual(v.valueOf(), { v: 'default' })
+			assert.deepEqual(vp.valueOf(), 'default')
+			//v.put({})
+			//assert.deepEqual(vp.valueOf(), 'default') // undefined
+			var vp2 = v.property('p')
+			vp2.put('unrelated prop value')
+			assert.deepEqual(vp.valueOf(), 'default')
+			assert.deepEqual(v.valueOf(), { v: 'default', p: 'unrelated prop value' })
 		},
 		
 		'Assignment does not change defaults': function() {
