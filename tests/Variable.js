@@ -1244,6 +1244,15 @@ define([
 			assert.deepEqual(v.valueOf(), { v: 'default', p: 'unrelated prop value' })
 		},
 
+		'Assignment updates upstream variable': function() {
+			var initial = new Variable()
+			var v = new Variable(initial)
+			assert.isUndefined(v.valueOf())
+			v.put('abcd')
+			assert.equal(v.valueOf(), 'abcd')
+			assert.equal(initial.valueOf(), 'abcd')
+		},
+
 		'Variable (with undefined value) considered initialized value': function() {
 			var initial = new Variable()
 			var v = new Variable(initial)
